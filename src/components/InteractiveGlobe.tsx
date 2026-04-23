@@ -12,7 +12,7 @@ interface InteractiveGlobeProps {
 const GEOJSON_URL = "https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson";
 
 export default function InteractiveGlobe({ visible, selectedCountry, onSelectCountry }: InteractiveGlobeProps) {
-  const globeRef = useRef<GlobeMethods>();
+  const globeRef = useRef<GlobeMethods>(null!);
   const [countriesGeoJson, setCountriesGeoJson] = useState<{ features: any[] }>({ features: [] });
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
 

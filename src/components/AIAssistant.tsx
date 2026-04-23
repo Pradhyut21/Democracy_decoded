@@ -34,7 +34,7 @@ function getAIResponse(input: string): string {
 
 interface AIAssistantProps { onBackToGlobe: () => void; }
 
-export default function AIAssistant({ onBackToGlobe }: AIAssistantProps) {
+export default function AIAssistant({}: AIAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
