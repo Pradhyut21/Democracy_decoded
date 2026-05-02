@@ -50,7 +50,7 @@ export default function CountryDetail({ country, onBack }: CountryDetailProps) {
   return (
     <section ref={sectionRef} id="country-detail" className="relative px-5 md:px-12 py-16" style={{ zIndex: 2, backgroundColor: "#0a0a0f", pointerEvents: "auto" }}>
       <div className="max-w-[1400px] mx-auto">
-        <button onClick={onBack} className="animate-item label-ui flex items-center gap-2 mb-8 transition-colors duration-150 hover:text-[#ffffff]" style={{ color: "#555560" }}>
+        <button onClick={onBack} aria-label="Back to globe" className="animate-item label-ui flex items-center gap-2 mb-8 transition-colors duration-150 hover:text-[#ffffff]" style={{ color: "#555560" }}>
           <ArrowLeft size={14} /> BACK TO GLOBE
         </button>
 

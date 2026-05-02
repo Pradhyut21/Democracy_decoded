@@ -63,7 +63,7 @@ export default function QuizArena({ onBackToGlobe }: QuizArenaProps) {
               <span key={item} className="label-small" style={{ color: "#555560" }}>{item}</span>
             ))}
           </div>
-          <button className="btn-primary" onClick={handleStart}>START QUIZ</button>
+          <button className="btn-primary" aria-label="Start the quiz" onClick={handleStart}>START QUIZ</button>
         </div>
       </section>
     );
@@ -100,8 +100,8 @@ export default function QuizArena({ onBackToGlobe }: QuizArenaProps) {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <button className="btn-primary flex items-center gap-2" onClick={handleRetry}><RotateCcw size={14} /> RETRY QUIZ</button>
-            <button className="btn-secondary flex items-center gap-2" onClick={onBackToGlobe}><Globe size={14} /> BACK TO GLOBE</button>
+            <button className="btn-primary flex items-center gap-2" aria-label="Retry the quiz" onClick={handleRetry}><RotateCcw size={14} /> RETRY QUIZ</button>
+            <button className="btn-secondary flex items-center gap-2" aria-label="Return to the interactive globe" onClick={onBackToGlobe}><Globe size={14} /> BACK TO GLOBE</button>
           </div>
         </div>
       </section>
@@ -128,7 +128,7 @@ export default function QuizArena({ onBackToGlobe }: QuizArenaProps) {
               let borderColor = "#1e1e2d"; let bgColor = "#0d0d14";
               if (isRevealed) { if (isCorrect) { borderColor = "rgba(74, 222, 128, 0.5)"; bgColor = "rgba(74, 222, 128, 0.08)"; } else if (isSelected && !isCorrect) { borderColor = "rgba(248, 113, 113, 0.5)"; bgColor = "rgba(248, 113, 113, 0.08)"; } } else if (isSelected) { borderColor = "#c9a227"; bgColor = "rgba(201, 162, 39, 0.08)"; }
               return (
-                <button key={i} onClick={() => !isRevealed && handleAnswer(i)} className="flex items-center gap-4 p-4 text-left transition-all duration-150"
+                <button key={i} onClick={() => !isRevealed && handleAnswer(i)} aria-label={`Option ${OPTION_LETTERS[i]}: ${option}`} className="flex items-center gap-4 p-4 text-left transition-all duration-150"
                   style={{ backgroundColor: bgColor, border: `1px solid ${borderColor}`, borderRadius: "12px", cursor: isRevealed ? "default" : "pointer" }}>
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#13131f", border: "1px solid #1e1e2d" }}>
                     <span className="font-mono text-[13px]" style={{ color: "#a0a0b0" }}>{OPTION_LETTERS[i]}</span>
@@ -149,12 +149,12 @@ export default function QuizArena({ onBackToGlobe }: QuizArenaProps) {
         </div>
 
         <div className="flex items-center justify-between mt-auto">
-          <button className="btn-secondary flex items-center gap-2" onClick={handlePrev} disabled={state.currentIndex === 0}
+          <button className="btn-secondary flex items-center gap-2" aria-label="Previous question" onClick={handlePrev} disabled={state.currentIndex === 0}
             style={{ opacity: state.currentIndex === 0 ? 0.4 : 1, pointerEvents: state.currentIndex === 0 ? "none" : "auto" }}>
             <ArrowLeft size={14} /> PREVIOUS
           </button>
           {state.revealed[state.currentIndex] && (
-            <button className="btn-primary flex items-center gap-2 animate-fade-in" onClick={handleNext}>
+            <button className="btn-primary flex items-center gap-2 animate-fade-in" aria-label={state.currentIndex < quizQuestions.length - 1 ? "Next question" : "Finish quiz"} onClick={handleNext}>
               {state.currentIndex < quizQuestions.length - 1 ? "NEXT" : "FINISH"} <ArrowRight size={14} />
             </button>
           )}

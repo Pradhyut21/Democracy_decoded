@@ -8,7 +8,7 @@ export default function Footer() {
         </div>
         <div className="flex items-center gap-6">
           {["DATA SOURCES", "METHODOLOGY", "PRIVACY", "TERMS"].map((l) => (
-            <button key={l} className="label-ui transition-colors duration-150 hover:text-[#ffffff]" style={{ color: "#555560" }}>{l}</button>
+            <button key={l} aria-label={`View ${l.toLowerCase()}`} className="label-ui transition-colors duration-150 hover:text-[#ffffff]" style={{ color: "#555560" }}>{l}</button>
           ))}
         </div>
         <span className="label-small" style={{ color: "#c9a227" }}>12 COUNTRIES &middot; 30+ CYCLES &middot; LIVE</span>

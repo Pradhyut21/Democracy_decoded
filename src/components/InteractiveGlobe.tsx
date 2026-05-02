@@ -11,15 +11,24 @@ interface InteractiveGlobeProps {
 
 const GEOJSON_URL = "https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson";
 
+interface GeoJsonFeature {
+  properties: {
+    ISO_A3: string;
+    NAME: string;
+    [key: string]: unknown;
+  };
+  geometry: unknown;
+}
+
 export default function InteractiveGlobe({ visible, selectedCountry, onSelectCountry }: InteractiveGlobeProps) {
   const globeRef = useRef<GlobeMethods>(null!);
-  const [countriesGeoJson, setCountriesGeoJson] = useState<{ features: any[] }>({ features: [] });
+  const [countriesGeoJson, setCountriesGeoJson] = useState<{ features: GeoJsonFeature[] }>({ features: [] });
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(GEOJSON_URL)
       .then(res => res.json())
-      .then(setCountriesGeoJson)
+      .then((data: { features: GeoJsonFeature[] }) => setCountriesGeoJson(data))
       .catch(err => console.error("Failed to load GeoJSON:", err));
   }, []);
 
@@ -48,8 +57,9 @@ export default function InteractiveGlobe({ visible, selectedCountry, onSelectCou
     }
   }, [selectedCountry]);
 
-  const handlePolygonClick = useCallback((obj: any) => {
-    const isoA3 = obj.properties.ISO_A3;
+  const handlePolygonClick = useCallback((obj: object) => {
+    const feature = obj as GeoJsonFeature;
+    const isoA3 = feature.properties.ISO_A3;
     const country = countryDataMap.get(isoA3);
     if (country) {
       onSelectCountry(country);
@@ -57,8 +67,9 @@ export default function InteractiveGlobe({ visible, selectedCountry, onSelectCou
   }, [countryDataMap, onSelectCountry]);
 
   // Premium Customization
-  const polygonColor = useCallback((d: any) => {
-    const isoA3 = d.properties.ISO_A3;
+  const polygonColor = useCallback((d: object) => {
+    const feature = d as GeoJsonFeature;
+    const isoA3 = feature.properties.ISO_A3;
     const isSelected = selectedCountry?.isoA3 === isoA3;
     const isHovered = hoveredCountry === isoA3;
     const hasData = countryDataMap.has(isoA3);
@@ -96,11 +107,12 @@ export default function InteractiveGlobe({ visible, selectedCountry, onSelectCou
         
         polygonsData={countriesGeoJson.features}
         polygonSideColor={() => "rgba(30, 30, 45, 0.3)"}
-        polygonStrokeColor={(d: any) => countryDataMap.has(d.properties.ISO_A3) ? "#c9a227" : "#1e1e2d"}
+        polygonStrokeColor={(d: object) => countryDataMap.has((d as GeoJsonFeature).properties.ISO_A3) ? "#c9a227" : "#1e1e2d"}
         polygonCapColor={polygonColor}
-        polygonLabel={(d: any) => {
-          const name = d.properties.NAME;
-          const country = countryDataMap.get(d.properties.ISO_A3);
+        polygonLabel={(d: object) => {
+          const feature = d as GeoJsonFeature;
+          const name = feature.properties.NAME;
+          const country = countryDataMap.get(feature.properties.ISO_A3);
           const hasData = !!country;
           return `
             <div class="p-4 rounded-xl shadow-2xl" style="background: #13131f; border: 1px solid #c9a227; color: #ffffff; font-family: 'Inter', sans-serif; pointer-events: none; min-width: 240px;">
@@ -125,7 +137,7 @@ export default function InteractiveGlobe({ visible, selectedCountry, onSelectCou
             </div>
           `;
         }}
-        onPolygonHover={(obj: any) => setHoveredCountry(obj ? obj.properties.ISO_A3 : null)}
+        onPolygonHover={(obj: object | null) => setHoveredCountry(obj ? (obj as GeoJsonFeature).properties.ISO_A3 : null)}
         onPolygonClick={handlePolygonClick}
         onGlobeClick={() => {}}
 
@@ -133,13 +145,13 @@ export default function InteractiveGlobe({ visible, selectedCountry, onSelectCou
         atmosphereAltitude={0.15}
         
         pointsData={countries}
-        pointLat={(d: any) => d.coordinates[0]}
-        pointLng={(d: any) => d.coordinates[1]}
+        pointLat={(d: object) => (d as CountryData).coordinates[0]}
+        pointLng={(d: object) => (d as CountryData).coordinates[1]}
         pointColor={() => "#c9a227"}
         pointAltitude={0.01}
         pointRadius={0.5}
         pointsMerge={true}
-        onPointClick={(point: any) => {
+        onPointClick={(point: object) => {
           onSelectCountry(point as CountryData);
         }}
       />

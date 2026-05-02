@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Search } from "lucide-react";
 import { countries, type CountryData } from "@/data/countries";
 
@@ -9,7 +9,6 @@ interface HeroProps {
 
 export default function Hero({ onSelectCountry, onStartQuiz }: HeroProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [results, setResults] = useState<CountryData[]>([]);
   const [isFocused, setIsFocused] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -25,20 +24,17 @@ export default function Hero({ onSelectCountry, onStartQuiz }: HeroProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const filtered = countries.filter((c) => 
-        (c.name && c.name.toLowerCase().includes(q)) ||
-        (c.leader && c.leader.name && c.leader.name.toLowerCase().includes(q)) ||
-        (c.isoA3 && c.isoA3.toLowerCase().includes(q))
-      );
-      setResults(filtered.slice(0, 6));
-      setHighlightedIndex(-1);
-    } else { 
-      setResults([]); 
-    }
+  const results = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    return countries.filter((c) => 
+      (c.name && c.name.toLowerCase().includes(q)) ||
+      (c.leader && c.leader.name && c.leader.name.toLowerCase().includes(q)) ||
+      (c.isoA3 && c.isoA3.toLowerCase().includes(q))
+    ).slice(0, 6);
   }, [searchQuery]);
+
+  // Removed useEffect with setHighlightedIndex to avoid cascading renders
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") { 
@@ -59,7 +55,6 @@ export default function Hero({ onSelectCountry, onStartQuiz }: HeroProps) {
 
   const handleSelect = (country: CountryData) => {
     setSearchQuery(""); 
-    setResults([]); 
     setIsFocused(false);
     onSelectCountry(country);
   };
@@ -102,8 +97,8 @@ export default function Hero({ onSelectCountry, onStartQuiz }: HeroProps) {
           <div className="flex items-center gap-3 px-5 py-4 transition-all duration-200"
             style={{ backgroundColor: "#0d0d14", border: `1px solid ${isFocused ? "#c9a227" : "#1e1e2d"}`, borderRadius: "12px", boxShadow: isFocused ? "0 0 0 4px rgba(201, 162, 39, 0.2)" : "none" }}>
             <Search size={18} style={{ color: "#c9a227", flexShrink: 0 }} />
-            <input ref={inputRef} type="text" placeholder="Search for a country..." value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsFocused(true)}
+            <input ref={inputRef} type="text" placeholder="Search for a country..." aria-label="Search countries" value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setHighlightedIndex(-1); }} onFocus={() => setIsFocused(true)}
               onKeyDown={handleKeyDown} spellCheck={false}
               className="flex-1 bg-transparent border-none outline-none text-[16px]" style={{ color: "#ffffff" }} />
           </div>
@@ -111,9 +106,10 @@ export default function Hero({ onSelectCountry, onStartQuiz }: HeroProps) {
           {results.length > 0 && isFocused && (
             <div className="absolute top-full left-0 right-0 mt-3 animate-fade-in shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
               style={{ backgroundColor: "#13131f", border: "1px solid #c9a227", borderRadius: "16px", maxHeight: "420px", overflowY: "auto", zIndex: 3000, pointerEvents: 'auto' }}>
-              {results.map((country, index) => (
+              {results.map((country: CountryData, index: number) => (
                 <button key={country.id}
                   className="w-full flex items-center gap-4 px-5 py-4 transition-all duration-150 text-left border-none outline-none"
+                  aria-label={`Select ${country.name}`}
                   style={{ backgroundColor: highlightedIndex === index ? "rgba(201, 162, 39, 0.12)" : "transparent", borderBottom: index < results.length - 1 ? "1px solid #1e1e2d" : "none" }}
                   onMouseEnter={() => setHighlightedIndex(index)} 
                   onClick={() => handleSelect(country)}>

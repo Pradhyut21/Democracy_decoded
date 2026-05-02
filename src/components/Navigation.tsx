@@ -20,7 +20,7 @@ export default function Navigation({ activeSection, onNavigate }: NavigationProp
     <>
       <nav className="fixed top-0 left-0 right-0 h-16 z-50 flex items-center justify-between px-6 md:px-12"
         style={{ backgroundColor: "rgba(10, 10, 15, 0.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid #1e1e2d" }}>
-        <button onClick={() => onNavigate("globe")} className="font-mono text-sm uppercase tracking-[0.12em] transition-colors duration-150"
+        <button onClick={() => onNavigate("globe")} aria-label="Go to Globe Home" className="font-mono text-sm uppercase tracking-[0.12em] transition-colors duration-150"
           style={{ color: activeSection === "globe" ? "#c9a227" : "#ffffff" }}>
           DEMOCRACY DECODED
         </button>
@@ -28,6 +28,7 @@ export default function Navigation({ activeSection, onNavigate }: NavigationProp
         <div className="hidden md:flex items-center gap-10">
           {NAV_LINKS.map((link) => (
             <button key={link.id} onClick={() => onNavigate(link.id)}
+              aria-label={`Navigate to ${link.label}`}
               className="font-mono text-[13px] uppercase tracking-[0.1em] relative transition-colors duration-150"
               style={{ color: activeSection === link.id ? "#c9a227" : "#555560" }}>
               {link.label}
@@ -37,14 +38,14 @@ export default function Navigation({ activeSection, onNavigate }: NavigationProp
           ))}
         </div>
 
-        <button className="md:hidden" onClick={() => setMobileOpen(true)} style={{ color: "#ffffff" }}>
+        <button className="md:hidden" onClick={() => setMobileOpen(true)} aria-label="Open navigation menu" style={{ color: "#ffffff" }}>
           <Menu size={20} strokeWidth={2} />
         </button>
       </nav>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-8" style={{ backgroundColor: "#0a0a0f" }}>
-          <button className="absolute top-5 right-6" onClick={() => setMobileOpen(false)} style={{ color: "#ffffff" }}>
+          <button className="absolute top-5 right-6" onClick={() => setMobileOpen(false)} aria-label="Close navigation menu" style={{ color: "#ffffff" }}>
             <X size={24} />
           </button>
           {NAV_LINKS.map((link) => (

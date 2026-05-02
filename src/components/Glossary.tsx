@@ -28,7 +28,7 @@ export default function Glossary() {
         <div className="max-w-[540px] mx-auto mb-10">
           <div className="flex items-center gap-3 px-5 py-4" style={{ backgroundColor: "#0d0d14", border: "1px solid #1e1e2d", borderRadius: "12px" }}>
             <Search size={18} style={{ color: "#555560" }} />
-            <input type="text" placeholder="Search terms..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            <input type="text" placeholder="Search terms..." aria-label="Search glossary terms" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 bg-transparent border-none outline-none text-[15px]" style={{ color: "#ffffff" }} />
           </div>
         </div>
