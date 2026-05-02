@@ -36,6 +36,7 @@ function App() {
 
   return (
     <div className="min-h-[100dvh]" style={{ backgroundColor: "#0a0a0f" }}>
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <Suspense fallback={null}>
         <InteractiveGlobe 
           visible={activeSection === "globe"} 
@@ -47,7 +48,7 @@ function App() {
 
       <Navigation activeSection={activeSection} onNavigate={handleNavigate} />
 
-      <div style={{ position: "relative", zIndex: 2, pointerEvents: "none" }}>
+      <main id="main-content" style={{ position: "relative", zIndex: 2, pointerEvents: "none" }}>
         {activeSection === "globe" && (
           <div style={{ pointerEvents: "none" }}>
             <Hero onSelectCountry={handleSelectCountry} onStartQuiz={handleStartQuiz} />
@@ -61,7 +62,7 @@ function App() {
         {activeSection === "assistant" && <div style={{ pointerEvents: "auto" }}><AIAssistant onBackToGlobe={handleBackToGlobe} /></div>}
         {activeSection === "about" && <div style={{ pointerEvents: "auto" }}><AboutSection /></div>}
         <div style={{ pointerEvents: "auto" }}><Footer /></div>
-      </div>
+      </main>
     </div>
   );
 }

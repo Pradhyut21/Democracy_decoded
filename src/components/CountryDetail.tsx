@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, TrendingUp, Calendar, Users, Vote } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { ArrowLeft, TrendingUp, Calendar, Users, Vote, BarChart3 } from "lucide-react";
 import type { CountryData } from "@/data/countries";
 
 interface CountryDetailProps { country: CountryData | null; onBack: () => void; }
@@ -26,17 +26,48 @@ function AnimatedNumber({ value, suffix = "" }: { value: number; suffix?: string
 export default function CountryDetail({ country, onBack }: CountryDetailProps) {
   const sectionRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    if (country && sectionRef.current) {
-      sectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-      const children = sectionRef.current.querySelectorAll(".animate-item");
-      children.forEach((child, i) => {
-        const el = child as HTMLElement;
-        el.style.opacity = "0"; el.style.transform = "translateY(40px)";
-        setTimeout(() => { el.style.transition = "opacity 0.8s cubic-bezier(0.33, 1, 0.68, 1), transform 0.8s cubic-bezier(0.33, 1, 0.68, 1)"; el.style.opacity = "1"; el.style.transform = "translateY(0)"; }, i * 100);
-      });
-    }
+  const drawChart = useCallback(() => {
+    if (!country || !(window as any).google || !(window as any).google.visualization) return;
+    
+    const data = (window as any).google.visualization.arrayToDataTable([
+      ['Metric', 'Percentage', { role: 'style' }],
+      ['Turnout', country.stats.voterTurnout, '#4ade80'],
+      ['Registration', country.stats.registration, '#c9a227']
+    ]);
+
+    const options = {
+      backgroundColor: 'transparent',
+      legend: { position: 'none' },
+      hAxis: { textStyle: { color: '#a0a0b0' }, gridlines: { color: '#1e1e2d' } },
+      vAxis: { textStyle: { color: '#a0a0b0' }, minValue: 0, maxValue: 100 },
+      chartArea: { width: '80%', height: '70%' },
+      animation: { startup: true, duration: 1000, easing: 'out' }
+    };
+
+    const chart = new (window as any).google.visualization.ColumnChart(document.getElementById('voter_chart'));
+    chart.draw(data, options);
   }, [country]);
+
+  useEffect(() => {
+    if (country) {
+      if (!(window as any).google?.visualization) {
+        (window as any).google.charts.load('current', { packages: ['corechart'] });
+        (window as any).google.charts.setOnLoadCallback(drawChart);
+      } else {
+        drawChart();
+      }
+      
+      if (sectionRef.current) {
+        sectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        const children = sectionRef.current.querySelectorAll(".animate-item");
+        children.forEach((child, i) => {
+          const el = child as HTMLElement;
+          el.style.opacity = "0"; el.style.transform = "translateY(40px)";
+          setTimeout(() => { el.style.transition = "opacity 0.8s cubic-bezier(0.33, 1, 0.68, 1), transform 0.8s cubic-bezier(0.33, 1, 0.68, 1)"; el.style.opacity = "1"; el.style.transform = "translateY(0)"; }, i * 100);
+        });
+      }
+    }
+  }, [country, drawChart]);
 
   if (!country) return null;
 
@@ -116,6 +147,14 @@ export default function CountryDetail({ country, onBack }: CountryDetailProps) {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div className="animate-item p-5" style={{ backgroundColor: "#13131f", border: "1px solid #1e1e2d", borderRadius: "16px" }}>
+              <div className="flex items-center gap-2 mb-4">
+                <BarChart3 size={16} style={{ color: "#c9a227" }} />
+                <span className="label-ui" style={{ color: "#c9a227" }}>VOTER PARTICIPATION CHART</span>
+              </div>
+              <div id="voter_chart" style={{ width: '100%', height: '200px' }}></div>
             </div>
 
             <div className="animate-item p-5" style={{ backgroundColor: "#13131f", border: "1px solid #1e1e2d", borderRadius: "16px" }}>

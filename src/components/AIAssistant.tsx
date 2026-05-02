@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Sparkles, Compass, User } from "lucide-react";
-import { getGeminiResponse } from "@/services/gemini";
+import { useGemini } from "@/hooks/useGemini";
+import DOMPurify from "dompurify";
 
 interface Message { id: string; role: "user" | "assistant"; content: string; timestamp: Date; }
 
@@ -13,27 +14,27 @@ interface AIAssistantProps { onBackToGlobe: () => void; }
 export default function AIAssistant({ onBackToGlobe }: AIAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const { ask, loading: isTyping } = useGemini();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isTyping]);
 
   const handleSend = async (textOverride?: string) => {
-    const textToSend = textOverride || input;
-    if (!textToSend.trim()) return;
+    const rawInput = textOverride || input;
+    if (!rawInput.trim()) return;
 
-    const userMsg: Message = { id: Date.now().toString(), role: "user", content: textToSend.trim(), timestamp: new Date() };
+    const sanitizedInput = DOMPurify.sanitize(rawInput.trim());
+    const userMsg: Message = { id: Date.now().toString(), role: "user", content: sanitizedInput, timestamp: new Date() };
+    
     setMessages((p) => [...p, userMsg]);
     setInput("");
-    setIsTyping(true);
 
-    // Prepare history for Gemini
     const history = messages.slice(1).map(msg => ({
-      role: msg.role === "user" ? "user" : "model",
+      role: (msg.role === "user" ? "user" : "model") as "user" | "model",
       parts: [{ text: msg.content }]
     }));
 
-    const response = await getGeminiResponse(userMsg.content, history);
+    const response = await ask(sanitizedInput, history);
     
     const aiMsg: Message = { 
       id: (Date.now() + 1).toString(), 
@@ -43,7 +44,6 @@ export default function AIAssistant({ onBackToGlobe }: AIAssistantProps) {
     };
     
     setMessages((p) => [...p, aiMsg]);
-    setIsTyping(false);
   };
 
   const handlePromptClick = (prompt: string) => { 

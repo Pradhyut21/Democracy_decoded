@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { Check, X, ArrowRight, ArrowLeft, RotateCcw, Globe, Award, BookOpen } from "lucide-react";
 import { quizQuestions, type QuizQuestion } from "@/data/quiz";
+import { saveQuizResult } from "@/services/firebase";
 
 interface QuizState {
   started: boolean;
@@ -43,8 +44,13 @@ export default function QuizArena({ onBackToGlobe }: QuizArenaProps) {
   }, []);
 
   const handleNext = () => {
-    if (state.currentIndex < quizQuestions.length - 1) setState((p) => ({ ...p, currentIndex: p.currentIndex + 1 }));
-    else setState((p) => ({ ...p, finished: true }));
+    if (state.currentIndex < quizQuestions.length - 1) {
+      setState((p) => ({ ...p, currentIndex: p.currentIndex + 1 }));
+    } else {
+      const correctCount = state.answers.filter((a, i) => a === quizQuestions[i].correctIndex).length;
+      saveQuizResult(correctCount, quizQuestions.length);
+      setState((p) => ({ ...p, finished: true }));
+    }
   };
 
   const handlePrev = () => { if (state.currentIndex > 0) setState((p) => ({ ...p, currentIndex: p.currentIndex - 1 })); };

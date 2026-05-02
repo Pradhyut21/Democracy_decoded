@@ -84,6 +84,8 @@ export default function InteractiveGlobe({ visible, selectedCountry, onSelectCou
   return (
     <div 
       id="interactive-globe-container"
+      role="img"
+      aria-label="Interactive 3D visualization of global electoral systems"
       style={{
         position: "fixed",
         top: 0,

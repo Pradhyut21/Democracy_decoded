@@ -1,13 +1,24 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import React, { StrictMode } from 'react'
+import ReactDOM from 'react-dom/client'
 import './index.css'
 import App from './App'
+import ErrorBoundary from './components/ErrorBoundary'
 import { initGA } from './services/analytics'
+import { validateEnv } from './config/env'
 
+validateEnv();
 initGA();
 
-createRoot(document.getElementById('root')!).render(
+if (import.meta.env.DEV) {
+  import('@axe-core/react').then(({ default: axe }) => {
+    axe(React, ReactDOM, 1000);
+  });
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )

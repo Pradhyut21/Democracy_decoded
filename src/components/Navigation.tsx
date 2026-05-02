@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 
 interface NavigationProps {
@@ -15,6 +15,22 @@ const NAV_LINKS = [
 
 export default function Navigation({ activeSection, onNavigate }: NavigationProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    // Add Google Translate script
+    const script = document.createElement("script");
+    script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+    script.async = true;
+    document.body.appendChild(script);
+
+    // Add initialization function to window
+    (window as any).googleTranslateElementInit = () => {
+      new (window as any).google.translate.TranslateElement(
+        { pageLanguage: "en", layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE },
+        "google_translate_element"
+      );
+    };
+  }, []);
 
   return (
     <>
@@ -38,9 +54,12 @@ export default function Navigation({ activeSection, onNavigate }: NavigationProp
           ))}
         </div>
 
-        <button className="md:hidden" onClick={() => setMobileOpen(true)} aria-label="Open navigation menu" style={{ color: "#ffffff" }}>
-          <Menu size={20} strokeWidth={2} />
-        </button>
+        <div className="flex items-center gap-4">
+          <div id="google_translate_element" className="hidden sm:block"></div>
+          <button className="md:hidden" onClick={() => setMobileOpen(true)} aria-label="Open navigation menu" style={{ color: "#ffffff" }}>
+            <Menu size={20} strokeWidth={2} />
+          </button>
+        </div>
       </nav>
 
       {mobileOpen && (

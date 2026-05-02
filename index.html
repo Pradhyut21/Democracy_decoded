@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" 
+      content="default-src 'self'; 
+               script-src 'self' 'unsafe-inline' https://www.googletagmanager.com;
+               connect-src 'self' https://generativelanguage.googleapis.com https://raw.githubusercontent.com https://unpkg.com https://www.google-analytics.com https://stats.g.doubleclick.net;
+               img-src 'self' data: https://unpkg.com https://raw.githubusercontent.com https://www.google-analytics.com;
+               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+               font-src 'self' https://fonts.gstatic.com;">
     <title>Democracy Decoded | Global Electoral Systems Education</title>
     <meta name="description" content="Explore global electoral systems through immersive 3D visualizations and AI-powered insights. Learn about voting methods, campaign strategies, and the mechanics of democracy." />
     
@@ -24,6 +31,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
   <body>
     <div id="root"></div>

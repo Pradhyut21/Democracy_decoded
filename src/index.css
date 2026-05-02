@@ -43,6 +43,14 @@
   .label-small {
     @apply font-mono text-[11px] uppercase tracking-[0.08em];
   }
+
+  .skip-link {
+    @apply absolute left-[-9999px] top-4 z-[100] px-4 py-2 bg-[#c9a227] text-[#0a0a0f] font-bold rounded-lg;
+    transition: left 0.3s;
+  }
+  .skip-link:focus {
+    @apply left-4;
+  }
 }
 
 @layer utilities {
