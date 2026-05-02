@@ -1,40 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" 
-      content="default-src 'self'; 
-               script-src 'self' 'unsafe-inline' https://www.googletagmanager.com;
-               connect-src 'self' https://generativelanguage.googleapis.com https://raw.githubusercontent.com https://unpkg.com https://www.google-analytics.com https://stats.g.doubleclick.net;
-               img-src 'self' data: https://unpkg.com https://raw.githubusercontent.com https://www.google-analytics.com;
-               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-               font-src 'self' https://fonts.gstatic.com;">
-    <title>Democracy Decoded | Global Electoral Systems Education</title>
-    <meta name="description" content="Explore global electoral systems through immersive 3D visualizations and AI-powered insights. Learn about voting methods, campaign strategies, and the mechanics of democracy." />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://democracy-decoded.vercel.app/" />
-    <meta property="og:title" content="Democracy Decoded | Global Electoral Systems Education" />
-    <meta property="og:description" content="Explore global electoral systems through immersive 3D visualizations and AI-powered insights." />
-    <meta property="og:image" content="https://democracy-decoded.vercel.app/og-image.jpg" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://democracy-decoded.vercel.app/" />
-    <meta property="twitter:title" content="Democracy Decoded | Global Electoral Systems Education" />
-    <meta property="twitter:description" content="Explore global electoral systems through immersive 3D visualizations and AI-powered insights." />
-    <meta property="twitter:image" content="https://democracy-decoded.vercel.app/og-image.jpg" />
+  <!-- SEO -->
+  <title>Democracy Decoded — Learn Indian Democratic Processes</title>
+  <meta name="description" content="Interactive platform for learning about Indian democracy, elections, and voting rights. Powered by Google Gemini AI." />
+  <meta name="keywords"    content="democracy, India, elections, voting, civic education, constitution" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <!-- Open Graph -->
+  <meta property="og:title"       content="Democracy Decoded" />
+  <meta property="og:description" content="Learn about Indian democracy with AI-powered education" />
+  <meta property="og:type"        content="website" />
+
+  <!-- Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src  'self' 'unsafe-inline' https://www.googletagmanager.com https://apis.google.com https://www.gstatic.com;
+    style-src   'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src    'self' https://fonts.gstatic.com;
+    connect-src 'self'
+                https://generativelanguage.googleapis.com
+                https://translation.googleapis.com
+                https://*.googleapis.com
+                https://*.firebaseio.com
+                https://firestore.googleapis.com
+                https://www.google-analytics.com;
+    img-src     'self' data: https:;
+    frame-src   'none';
+    object-src  'none';
+    base-uri    'self';
+  " />
+
+  <meta http-equiv="X-Content-Type-Options"    content="nosniff" />
+  <meta http-equiv="Referrer-Policy"           content="strict-origin-when-cross-origin" />
+
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://generativelanguage.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <meta name="theme-color" content="#c9a227" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+</head>
+<body style="background-color: #0a0a0f; margin: 0; font-family: 'Inter', sans-serif;">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
 </html>

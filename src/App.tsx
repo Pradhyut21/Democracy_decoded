@@ -7,8 +7,8 @@ import FeaturedElections from "@/components/FeaturedElections";
 import CountryDetail from "@/components/CountryDetail";
 import ElectionTimeline from "@/components/ElectionTimeline";
 import Glossary from "@/components/Glossary";
-import QuizArena from "@/components/QuizArena";
-import AIAssistant from "@/components/AIAssistant";
+import Quiz from "@/components/Quiz";
+import ChatBot from "@/components/ChatBot";
 import AboutSection from "@/components/AboutSection";
 import Footer from "@/components/Footer";
 import type { CountryData } from "@/data/countries";
@@ -58,11 +58,11 @@ function App() {
             <Glossary />
           </div>
         )}
-        {activeSection === "quiz" && <div style={{ pointerEvents: "auto" }}><QuizArena onBackToGlobe={handleBackToGlobe} /></div>}
-        {activeSection === "assistant" && <div style={{ pointerEvents: "auto" }}><AIAssistant onBackToGlobe={handleBackToGlobe} /></div>}
+        {activeSection === "quiz" && <div style={{ pointerEvents: "auto" }}><Quiz /></div>}
         {activeSection === "about" && <div style={{ pointerEvents: "auto" }}><AboutSection /></div>}
         <div style={{ pointerEvents: "auto" }}><Footer /></div>
       </main>
+      <ChatBot />
     </div>
   );
 }

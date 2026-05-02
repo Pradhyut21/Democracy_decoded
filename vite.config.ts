@@ -1,19 +1,32 @@
-/// <reference types="vitest" />
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react            from '@vitejs/plugin-react';
+import { resolve }      from 'path';
 
 export default defineConfig({
+  base: './',
   plugins: [react()],
-  base: "/Democracy_decoded/",
+
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+    alias: { '@': resolve(__dirname, './src') },
+  },
+
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react':    ['react', 'react-dom'],
+          'vendor-firebase': ['firebase/app', 'firebase/firestore', 'firebase/auth'],
+          'vendor-gemini':   ['@google/generative-ai'],
+        },
+      },
     },
+    chunkSizeWarningLimit: 600,
+    sourcemap: false,
+    minify: 'esbuild',
+    target: 'es2020',
   },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './src/setupTests.ts',
+
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@google/generative-ai'],
   },
-})
+});

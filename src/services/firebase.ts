@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "mock-key",
@@ -13,19 +13,39 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
-export async function saveQuizResult(score: number, total: number) {
+export async function saveQuizScore(playerName: string, score: number, topic: string) {
   if (import.meta.env.VITE_FIREBASE_API_KEY === "mock-key" || !import.meta.env.VITE_FIREBASE_API_KEY) {
     console.log("Firebase not configured, skipping result save.");
     return;
   }
   
   try {
-    await addDoc(collection(db, "quiz_results"), {
+    await addDoc(collection(db, "quiz_scores"), {
+      playerName,
       score,
-      total,
+      topic,
       timestamp: serverTimestamp(),
     });
   } catch (e) {
-    console.error("Error saving quiz result: ", e);
+    console.error("Error saving quiz score: ", e);
+  }
+}
+
+export async function getLeaderboard() {
+  if (import.meta.env.VITE_FIREBASE_API_KEY === "mock-key" || !import.meta.env.VITE_FIREBASE_API_KEY) {
+    return [];
+  }
+
+  try {
+    const q = query(
+      collection(db, "quiz_scores"),
+      orderBy("score", "desc"),
+      limit(10)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (e) {
+    console.error("Error fetching leaderboard: ", e);
+    return [];
   }
 }

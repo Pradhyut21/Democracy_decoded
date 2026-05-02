@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, Compass, User } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Send, Sparkles, User, RotateCcw, AlertCircle, Compass } from "lucide-react";
 import { useGemini } from "@/hooks/useGemini";
 import DOMPurify from "dompurify";
 
@@ -12,46 +12,67 @@ const WELCOME: Message = { id: "welcome", role: "assistant", content: "Hello! I'
 interface AIAssistantProps { onBackToGlobe: () => void; }
 
 export default function AIAssistant({ onBackToGlobe }: AIAssistantProps) {
-  const [messages, setMessages] = useState<Message[]>([WELCOME]);
+  const [localMessages, setLocalMessages] = useState<Message[]>([WELCOME]);
   const [input, setInput] = useState("");
-  const { ask, loading: isTyping } = useGemini();
+  const [streamingText, setStreamingText] = useState("");
+  const { sendMessage, loading: isTyping, error, reset } = useGemini();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isTyping]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [localMessages, streamingText, isTyping]);
 
-  const handleSend = async (textOverride?: string) => {
+  const handleSend = useCallback(async (textOverride?: string) => {
     const rawInput = textOverride || input;
-    if (!rawInput.trim()) return;
+    if (!rawInput.trim() || isTyping) return;
 
     const sanitizedInput = DOMPurify.sanitize(rawInput.trim());
     const userMsg: Message = { id: Date.now().toString(), role: "user", content: sanitizedInput, timestamp: new Date() };
     
-    setMessages((p) => [...p, userMsg]);
+    setLocalMessages((p) => [...p, userMsg]);
     setInput("");
+    setStreamingText("");
 
-    const history = messages.slice(1).map(msg => ({
-      role: (msg.role === "user" ? "user" : "model") as "user" | "model",
-      parts: [{ text: msg.content }]
-    }));
+    await sendMessage(sanitizedInput, (chunk) => {
+      setStreamingText(chunk);
+    });
 
-    const response = await ask(sanitizedInput, history);
+    setLocalMessages((p) => {
+      return [...p, { 
+        id: Date.now().toString(), 
+        role: "assistant", 
+        content: streamingText || "...", 
+        timestamp: new Date() 
+      }];
+    });
     
-    const aiMsg: Message = { 
-      id: (Date.now() + 1).toString(), 
-      role: "assistant", 
-      content: response, 
-      timestamp: new Date() 
-    };
-    
-    setMessages((p) => [...p, aiMsg]);
-  };
+    setStreamingText("");
+  }, [input, isTyping, sendMessage, streamingText]);
 
-  const handlePromptClick = (prompt: string) => { 
-    handleSend(prompt);
+  // Sync streaming text to final message when typing finishes
+  useEffect(() => {
+    if (!isTyping && streamingText) {
+      setLocalMessages(p => {
+        // Remove the temporary assistant message if we are replacing it
+        const filtered = p.filter(m => m.content !== "...");
+        return [...filtered, {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: streamingText,
+          timestamp: new Date()
+        }];
+      });
+      setStreamingText("");
+    }
+  }, [isTyping, streamingText]);
+
+  const handleReset = () => {
+    reset();
+    setLocalMessages([WELCOME]);
+    setStreamingText("");
   };
 
   return (
-    <section id="assistant" className="relative min-h-[100dvh] flex flex-col pt-20 pb-4" style={{ zIndex: 2, backgroundColor: "#0a0a0f" }}>
+    <section id="assistant" aria-label="Electoral Systems AI Guide" className="relative min-h-[100dvh] flex flex-col pt-20 pb-4" style={{ zIndex: 2, backgroundColor: "#0a0a0f" }}>
       <div className="max-w-[900px] mx-auto w-full flex-1 flex flex-col px-5 md:px-0">
         <div className="flex items-center justify-between py-4 border-b border-[#1e1e2d]">
           <div className="flex items-center gap-3">
@@ -59,31 +80,46 @@ export default function AIAssistant({ onBackToGlobe }: AIAssistantProps) {
               <Sparkles size={20} style={{ color: "#c9a227" }} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Electoral Guide</h2>
-              <p className="text-xs text-[#555560]">Powered by Democracy Decoded AI</p>
+              <h2 id="chat-heading" className="text-lg font-bold text-white">Electoral Guide</h2>
+              <p className="text-xs text-[#555560]">Advanced Gemini 1.5 Flash</p>
             </div>
           </div>
-          <button onClick={onBackToGlobe} aria-label="Back to Globe" className="px-4 py-2 rounded-lg text-xs font-medium transition-colors" style={{ backgroundColor: "#13131f", border: "1px solid #1e1e2d", color: "#a0a0b0" }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#c9a227")}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#1e1e2d")}>
-            Back to Globe
-          </button>
+          <div className="flex gap-2">
+            <button onClick={handleReset} aria-label="Clear conversation" className="p-2 rounded-lg transition-colors border border-[#1e1e2d] text-[#a0a0b0] hover:text-white">
+              <RotateCcw size={18} />
+            </button>
+            <button onClick={onBackToGlobe} aria-label="Back to Globe" className="px-4 py-2 rounded-lg text-xs font-medium transition-colors" style={{ backgroundColor: "#13131f", border: "1px solid #1e1e2d", color: "#a0a0b0" }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#c9a227")}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#1e1e2d")}>
+              Back to Globe
+            </button>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto flex flex-col gap-6 py-6">
-          {messages.map((msg) => (
-            <div key={msg.id} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+        <div role="log" aria-live="polite" aria-relevant="additions" className="flex-1 overflow-y-auto flex flex-col gap-6 py-6 custom-scrollbar">
+          {localMessages.map((msg) => (
+            <article key={msg.id} aria-label={`${msg.role === 'user' ? 'You' : 'Electoral Guide'}: ${msg.content}`} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
               <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: msg.role === "assistant" ? "rgba(201, 162, 39, 0.2)" : "#1e1e2d" }}>
                 {msg.role === "assistant" ? <Sparkles size={14} style={{ color: "#c9a227" }} /> : <User size={14} style={{ color: "#a0a0b0" }} />}
               </div>
-              <div className="max-w-[75%] md:max-w-[70%] px-4 py-3" style={{ backgroundColor: msg.role === "user" ? "#c9a227" : "#13131f", border: msg.role === "assistant" ? "1px solid #1e1e2d" : "none", borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px" }}>
+              <div className="max-w-[85%] md:max-w-[75%] px-4 py-3 shadow-lg" style={{ backgroundColor: msg.role === "user" ? "#c9a227" : "#13131f", border: msg.role === "assistant" ? "1px solid #1e1e2d" : "none", borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px" }}>
                 <p className="text-[15px] leading-relaxed whitespace-pre-wrap" style={{ color: msg.role === "user" ? "#0a0a0f" : "#ffffff" }}>{msg.content}</p>
-                <span className="label-small block mt-2" style={{ color: msg.role === "user" ? "rgba(10, 10, 15, 0.5)" : "#555560" }}>{msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                <span className="label-small block mt-2 opacity-60" style={{ color: msg.role === "user" ? "#0a0a0f" : "#555560" }}>{msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+              </div>
+            </article>
+          ))}
+          {streamingText && (
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201, 162, 39, 0.2)" }}>
+                <Sparkles size={14} style={{ color: "#c9a227" }} />
+              </div>
+              <div className="max-w-[85%] md:max-w-[75%] px-4 py-3" style={{ backgroundColor: "#13131f", border: "1px solid #1e1e2d", borderRadius: "16px 16px 16px 4px" }}>
+                <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-white">{streamingText}</p>
               </div>
             </div>
-          ))}
-          {isTyping && (
-            <div className="flex gap-3">
+          )}
+          {isTyping && !streamingText && (
+            <div role="status" aria-label="Electoral Guide is thinking" className="flex gap-3">
               <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(201, 162, 39, 0.2)" }}>
                 <Sparkles size={14} style={{ color: "#c9a227" }} />
               </div>
@@ -97,30 +133,49 @@ export default function AIAssistant({ onBackToGlobe }: AIAssistantProps) {
           <div ref={messagesEndRef} />
         </div>
 
-        {messages.length <= 1 && (
+        {error && (
+          <div role="alert" className="flex items-center gap-2 p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <AlertCircle size={16} />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {localMessages.length <= 1 && !isTyping && (
           <div className="flex flex-wrap gap-2 mb-4">
             {SUGGESTED_PROMPTS.map((prompt) => (
-              <button key={prompt} onClick={() => handlePromptClick(prompt)} aria-label={`Ask about ${prompt}`} className="px-4 py-2 text-[13px] transition-all duration-150" style={{ backgroundColor: "#13131f", border: "1px solid #1e1e2d", borderRadius: "32px", color: "#a0a0b0" }}
-                onMouseEnter={(e) => { (e.target as HTMLElement).style.borderColor = "#c9a227"; (e.target as HTMLElement).style.color = "#c9a227"; }}
-                onMouseLeave={(e) => { (e.target as HTMLElement).style.borderColor = "#1e1e2d"; (e.target as HTMLElement).style.color = "#a0a0b0"; }}>{prompt}</button>
+              <button key={prompt} onClick={() => handleSend(prompt)} aria-label={`Ask about ${prompt}`} className="px-4 py-2 text-[13px] transition-all duration-150" style={{ backgroundColor: "#13131f", border: "1px solid #1e1e2d", borderRadius: "32px", color: "#a0a0b0" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "#c9a227"; (e.currentTarget as HTMLElement).style.color = "#c9a227"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "#1e1e2d"; (e.currentTarget as HTMLElement).style.color = "#a0a0b0"; }}>{prompt}</button>
             ))}
           </div>
         )}
 
-        <div className="mt-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="mt-4" noValidate>
           <div className="flex items-center gap-2">
             <div className="flex-1 flex items-center gap-3 px-5 py-3" style={{ backgroundColor: "#13131f", border: "1px solid #1e1e2d", borderRadius: "12px" }}>
               <Compass size={16} style={{ color: "#555560" }} />
-              <input type="text" placeholder="Ask about elections, voting systems, or democracy..." aria-label="Question about elections" value={input} onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()} className="flex-1 bg-transparent border-none outline-none text-[15px]" style={{ color: "#ffffff" }} />
+              <label htmlFor="chat-input" className="sr-only">Ask a question about democracy</label>
+              <input 
+                id="chat-input"
+                ref={inputRef}
+                type="text" 
+                placeholder="Ask about elections, voting systems, or democracy..." 
+                value={input} 
+                onChange={(e) => setInput(e.target.value)}
+                disabled={isTyping}
+                maxLength={500}
+                autoComplete="off"
+                className="flex-1 bg-transparent border-none outline-none text-[15px]" 
+                style={{ color: "#ffffff" }} 
+              />
             </div>
-            <button onClick={() => handleSend()} disabled={!input.trim() || isTyping} aria-label="Send message" className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-150 flex-shrink-0"
+            <button type="submit" disabled={!input.trim() || isTyping} aria-label="Send message" className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-150 flex-shrink-0"
               style={{ backgroundColor: input.trim() && !isTyping ? "#c9a227" : "#1e1e2d", cursor: input.trim() && !isTyping ? "pointer" : "default" }}>
               <Send size={16} style={{ color: input.trim() && !isTyping ? "#0a0a0f" : "#555560" }} />
             </button>
           </div>
-          <p className="label-small text-center mt-3" style={{ color: "#555560" }}>AI responses are for educational purposes only</p>
-        </div>
+          <p id="input-hint" className="label-small text-center mt-3" style={{ color: "#555560" }}>Max 500 characters. AI responses for educational purposes.</p>
+        </form>
       </div>
     </section>
   );
